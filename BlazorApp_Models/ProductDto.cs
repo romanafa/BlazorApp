@@ -11,9 +11,9 @@ namespace BlazorApp_Models
     public class ProductDto
     {
         public int ProductId { get; set; }
-        [Required]
+        [Required(ErrorMessage = "Navnet mangler.")]
         public string ProductName { get; set; }
-        [Required]
+        [Required(ErrorMessage = "Beskrivelsen mangler.")]
         public string Description { get; set; }
         public string Color { get; set; }
         [Required]

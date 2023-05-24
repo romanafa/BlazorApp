@@ -1,0 +1,108 @@
+﻿@page "/product/create"
+@page "/product/edit/{id:int}"
+
+@inject ICategoryRepository _categoryRepository
+@inject IProductRepository _productRepository
+@inject NavigationManager _navigationManager
+
+<div class="row my-2">
+    <h3 class="card-title text-primary mb-3 ml-3">@Title</h3>
+
+    <div class="col-4">
+        @if(IsLoading)
+        {
+            <div class="text-center" style="text-align:center">
+                <div class="loader"></div>
+            </div>
+        }
+        else
+        {
+            <EditForm Model="Product" OnValidSubmit="UpsertProduct">
+                <DataAnnotationsValidator />
+                <div class="form-group">
+                    <label>Navn</label>
+                    <InputText @bind-Value="Product.ProductName" class="form-control"></InputText>
+                    <ValidationMessage For="()=>Product.ProductName"></ValidationMessage>
+                </div>
+                <div class="form-group">
+                    <label>Beskrivelse</label>
+                    <InputTextArea @bind-Value="Product.Description" class="form-control"></InputTextArea>
+                    <ValidationMessage For="()=>Product.Description"></ValidationMessage>
+                </div>
+                <div class="form-group">
+                    <label>Farge</label>
+                    <InputText @bind-Value="Product.Color" class="form-control"></InputText>
+                    <ValidationMessage For="()=>Product.Color"></ValidationMessage>
+                </div>
+                <div class="row pt-3">
+                    <div class="form-group col-6">
+                        <label>Kategori</label>
+                        <InputSelect @bind-Value="Product.CategoryId" class="form-select">
+                            <option value="0" disabled="disabled" selected>--Velg kategori--</option>
+                            @foreach(var category in Categories)
+                            {
+                                <option value="@category.Id">@category.Name</option>
+                            }
+                        </InputSelect>
+                        <ValidationMessage For="()=>Product.CategoryId"></ValidationMessage>
+                    </div>
+                    <div class="form-group col-6">
+                        <div class="form-check">
+                            <InputCheckbox @bind-Value="Product.IsCustomersFavorite" class="form-check-input"></InputCheckbox>
+                            <label class="form-check-label">Produkten er kundefavoritt</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group py-2">
+                    <button class="btn btn-primary">Lagre</button>
+                    <NavLink href="category" class="btn btn-secondary">Tilbake</NavLink>
+                </div>
+            </EditForm>
+        }     
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private ProductDto Product { get; set; } = new ProductDto();
+    private IEnumerable<CategoryDto> Categories { get; set; } = new List<CategoryDto>();
+    private string Title { get; set; } = "Ny produkt";
+    public bool IsLoading { get; set; } 
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await LoadProduct();
+        }
+    }
+
+    private async Task LoadProduct()
+    {
+        IsLoading = true;
+        StateHasChanged();
+        Categories = await _categoryRepository.GetAll();
+        {
+            //update
+            Title = "Rediger produkt";
+            Product = await _productRepository.GetById(Id);
+        }
+        IsLoading = false;
+        StateHasChanged();
+    }
+
+    private async Task UpsertProduct()
+    {
+        if (Product.ProductId == 0)
+        {
+            await _productRepository.Create(Product);
+        }
+        else
+        {
+            await _productRepository.Update(Product);
+        }
+        _navigationManager.NavigateTo("product");
+    }
+}
