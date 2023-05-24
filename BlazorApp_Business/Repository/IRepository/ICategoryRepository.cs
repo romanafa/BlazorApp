@@ -9,10 +9,10 @@ namespace BlazorApp_Business.Repository.IRepository
 {
     public interface ICategoryRepository
     {
-        public CategoryDto Create(CategoryDto categoryDto);
-        public CategoryDto Update(CategoryDto categoryDto);
-        public int Delete(int id);
-        public CategoryDto GetById(int id);
-        public IEnumerable<CategoryDto> GetAll();
+        public Task<CategoryDto> Create(CategoryDto categoryDto);
+        public Task<CategoryDto> Update(CategoryDto categoryDto);
+        public Task<int> Delete(int id);
+        public Task<CategoryDto> GetById(int id);
+        public Task<IEnumerable<CategoryDto>> GetAll();
     }
 }

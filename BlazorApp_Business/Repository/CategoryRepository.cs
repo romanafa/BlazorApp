@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 
 namespace BlazorApp_Business.Repository
 {
@@ -22,37 +23,37 @@ namespace BlazorApp_Business.Repository
             _mapper = mapper;
         }
 
-        public CategoryDto Create(CategoryDto categoryDto)
+        public async Task<CategoryDto> Create(CategoryDto categoryDto)
         {
             var category = _mapper.Map<CategoryDto, Category>(categoryDto);
             category.CreatedDate = DateTime.Now;
 
             _db.Categories.Add(category);
-            _db.SaveChanges();
+            await _db.SaveChangesAsync();
 
             return _mapper.Map<Category, CategoryDto>(category);
         }
 
-        public int Delete(int id)
+        public async Task<int> Delete(int id)
         {
-            var category = _db.Categories.FirstOrDefault(c => c.Id == id);
+            var category = await _db.Categories.FirstOrDefaultAsync(c => c.Id == id);
             if(category != null)
             {
                 _db.Categories.Remove(category);
-                return _db.SaveChanges();
+                return await _db.SaveChangesAsync();
             }
             return 0;
 
         }
 
-        public IEnumerable<CategoryDto> GetAll()
+        public async Task<IEnumerable<CategoryDto>> GetAll()
         {
             return _mapper.Map<IEnumerable<Category>, IEnumerable<CategoryDto>>(_db.Categories);
         }
 
-        public CategoryDto GetById(int id)
+        public async Task<CategoryDto> GetById(int id)
         {
-            var category = _db.Categories.FirstOrDefault(c => c.Id == id);
+            var category = await _db.Categories.FirstOrDefaultAsync(c => c.Id == id);
             if (category != null)
             {
                 return _mapper.Map<Category, CategoryDto>(category);
@@ -60,15 +61,15 @@ namespace BlazorApp_Business.Repository
             return new CategoryDto();
         }
 
-        public CategoryDto Update(CategoryDto categoryDto)
+        public async Task<CategoryDto> Update(CategoryDto categoryDto)
         {
-            var categoryFromDb = _db.Categories.FirstOrDefault(c => c.Id == categoryDto.Id);
+            var categoryFromDb = await _db.Categories.FirstOrDefaultAsync(c => c.Id == categoryDto.Id);
 
             if(categoryFromDb != null)
             {
                 categoryFromDb.Name = categoryDto.Name;
                 _db.Categories.Update(categoryFromDb);
-                _db.SaveChanges();
+                await _db.SaveChangesAsync();
                 return _mapper.Map<Category, CategoryDto>(categoryFromDb);
             }
 

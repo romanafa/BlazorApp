@@ -38,37 +38,42 @@
 
     private CategoryDto Category { get; set; } = new CategoryDto();
     private string Title { get; set; } = "Ny kategori";
-    public bool IsLoading { get; set; } = true;
+    public bool IsLoading { get; set; } 
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if(Id == 0)
+        if (firstRender)
         {
-            IsLoading = false;
+            if (Id == 0)
+            {
+                IsLoading = false;
+            }
+            else
+            {
+                Title = "Rediger kategori";
+                await LoadCategory();
+            }
         }
-        else
-        {
-            Title = "Rediger kategori";
-            await Task.Run(LoadCategory);
-        }
-
     }
 
-    private void LoadCategory()
+    private async Task LoadCategory()
     {
-        Category = _categoryRepository.GetById(Id);
+        IsLoading = true;
+        StateHasChanged();
+        Category = await _categoryRepository.GetById(Id);
         IsLoading = false;
+        StateHasChanged();
     }
 
-    private void UpsertCategory()
+    private async Task UpsertCategory()
     {
         if(Category.Id == 0)
         {
-            _categoryRepository.Create(Category);
+            await _categoryRepository.Create(Category);
         }
         else
         {
-            _categoryRepository.Update(Category);    
+            await _categoryRepository.Update(Category);
         }
         _navigationManager.NavigateTo("category");
     }
