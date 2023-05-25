@@ -4,11 +4,13 @@
 @inject ICategoryRepository _categoryRepository
 @inject IProductRepository _productRepository
 @inject NavigationManager _navigationManager
+@inject IFileUpload _fileUpload
+@inject IJSRuntime _jsRuntime
 
 <div class="row my-2">
     <h3 class="card-title text-primary mb-3 ml-3">@Title</h3>
 
-    <div class="col-4">
+    <div class="col-md-10">
         @if(IsLoading)
         {
             <div class="text-center" style="text-align:center">
@@ -34,8 +36,9 @@
                     <InputText @bind-Value="Product.Color" class="form-control"></InputText>
                     <ValidationMessage For="()=>Product.Color"></ValidationMessage>
                 </div>
+
                 <div class="row pt-3">
-                    <div class="form-group col-6">
+                    <div class="form-group col-6 ">
                         <label>Kategori</label>
                         <InputSelect @bind-Value="Product.CategoryId" class="form-select">
                             <option value="0" disabled="disabled" selected>--Velg kategori--</option>
@@ -46,19 +49,28 @@
                         </InputSelect>
                         <ValidationMessage For="()=>Product.CategoryId"></ValidationMessage>
                     </div>
-                    <div class="form-group col-6">
+                    <div class="form-group col-6 pt-3">
                         <div class="form-check">
                             <InputCheckbox @bind-Value="Product.IsCustomersFavorite" class="form-check-input"></InputCheckbox>
                             <label class="form-check-label">Produkten er kundefavoritt</label>
                         </div>
                     </div>
+                    <br>
+                    <div class="form-group col-6 pt-3">
+                        <p>Bilde</p>
+                        <InputFile OnChange="HandleImageUpload"></InputFile>
+                    </div>
                 </div>
-                <div class="form-group py-2">
+
+                <div class="form-group py-2 pt-3">
                     <button class="btn btn-primary">Lagre</button>
-                    <NavLink href="category" class="btn btn-secondary">Tilbake</NavLink>
+                    <NavLink href="product" class="btn btn-secondary">Tilbake</NavLink>
                 </div>
             </EditForm>
         }     
+    </div>
+    <div class="col-md-2">
+        <img src="@Product.ImageUrl" class="w-100" />
     </div>
 </div>
 
@@ -66,10 +78,14 @@
     [Parameter]
     public int Id { get; set; }
 
-    private ProductDto Product { get; set; } = new ProductDto();
+    private ProductDto Product { get; set; } = new()
+    {
+        ImageUrl ="/images/default.png"
+    };
     private IEnumerable<CategoryDto> Categories { get; set; } = new List<CategoryDto>();
-    private string Title { get; set; } = "Ny produkt";
+    private string Title { get; set; } = "Nytt produkt";
     public bool IsLoading { get; set; } 
+    public string OldImageUrl { get; set; }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -83,11 +99,13 @@
     {
         IsLoading = true;
         StateHasChanged();
+
         Categories = await _categoryRepository.GetAll();
+        if (Id != 0)
         {
-            //update
-            Title = "Rediger produkt";
+            Title = "Rediger produktet";
             Product = await _productRepository.GetById(Id);
+            OldImageUrl = Product.ImageUrl;
         }
         IsLoading = false;
         StateHasChanged();
@@ -98,11 +116,55 @@
         if (Product.ProductId == 0)
         {
             await _productRepository.Create(Product);
+            await _jsRuntime.ToastrSuccess("Nytt produkt er opprettet.");
         }
         else
         {
+            if(OldImageUrl != Product.ImageUrl)
+            {
+                _fileUpload.DeleteFile(OldImageUrl);
+            }
             await _productRepository.Update(Product);
+            await _jsRuntime.ToastrSuccess("Produktet er oppdatert.");
         }
         _navigationManager.NavigateTo("product");
+    }
+
+    private async Task HandleImageUpload(InputFileChangeEventArgs a)
+    {
+        IsLoading = true;
+        try
+        {
+            //if file is uploaded
+            if (a.GetMultipleFiles().Count > 0)
+            {
+                foreach (var file in a.GetMultipleFiles())
+                {
+                    //create file info
+                    System.IO.FileInfo fileInfo = new System.IO.FileInfo(file.Name);
+
+                    //only .jpg, .png, .jpeg allowed
+                    if (fileInfo.Extension.ToLower() == ".jpg" ||
+                      fileInfo.Extension.ToLower() == ".png" ||
+                      fileInfo.Extension.ToLower() == ".jpeg")
+                    {
+                        Product.ImageUrl = await _fileUpload.UploadFile(file);
+                    }
+                    else
+                    {
+                        await _jsRuntime.ToastrError("Kun .jpg/.jpeg/.png tillatt");
+                        IsLoading = false;
+                        return;
+                    }
+                }
+            }
+            IsLoading = false;
+        }
+        catch (Exception e)
+        {
+            await _jsRuntime.ToastrError(e.Message);
+            IsLoading = false;
+            return;
+        }
     }
 }

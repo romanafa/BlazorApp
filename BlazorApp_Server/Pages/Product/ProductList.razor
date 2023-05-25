@@ -2,6 +2,8 @@
 
 @inject IProductRepository _productRepository
 @inject IJSRuntime _jsRuntime
+@inject IFileUpload _fileUpload
+@inject NavigationManager _navigationManager
 
 <_DeleteConfirmation IsProcessing="IsLoading" ConfirmationChanged="ConfirmDelete"></_DeleteConfirmation>
 <div class="row mt-4">
@@ -19,6 +21,7 @@
                     <tr>
                         <th>Navn</th>
                         <th>Kategori</th>
+                        <th>Farge</th>
                         <th>Kundefavoritt</th>
                         <th></th>
                     </tr>
@@ -32,6 +35,9 @@
                             </td>
                             <td>
                                 @objProduct.Category.Name
+                            </td>
+                            <td>
+                                @objProduct.Color
                             </td>
                             <td>
                                 <input type="checkbox" disabled checked="@objProduct.IsCustomersFavorite">
@@ -96,7 +102,16 @@
         IsLoading = true;
         if (isConfirmed && DeleteProductId != 0)
         {
+            ProductDto product = await _productRepository.GetById(DeleteProductId);
+
+            //check if product contains image other than default (not to delete the dafault one)
+            if (!product.ImageUrl.Contains("default.png"))
+            {
+                _fileUpload.DeleteFile(product.ImageUrl);
+
+            }
             await _productRepository.Delete(DeleteProductId);
+            await _jsRuntime.ToastrSuccess("Produkt ble slettet.");
             await _jsRuntime.InvokeVoidAsync("HideDeleteConfirmationModal");
             await LoadProducts();
         }
