@@ -108,8 +108,8 @@
             if (!product.ImageUrl.Contains("default.png"))
             {
                 _fileUpload.DeleteFile(product.ImageUrl);
-
             }
+
             await _productRepository.Delete(DeleteProductId);
             await _jsRuntime.ToastrSuccess("Produkt ble slettet.");
             await _jsRuntime.InvokeVoidAsync("HideDeleteConfirmationModal");
