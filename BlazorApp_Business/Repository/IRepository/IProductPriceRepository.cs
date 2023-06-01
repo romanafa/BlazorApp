@@ -13,6 +13,6 @@ namespace BlazorApp_Business.Repository.IRepository
         public Task<ProductPriceDto> Update(ProductPriceDto productPriceDto);
         public Task<int> Delete(int id);
         public Task<ProductPriceDto> GetById(int id);
-        public Task<IEnumerable<ProductPriceDto>> GetAll();
+        public Task<IEnumerable<ProductPriceDto>> GetAllPrices(int? productId = null);
     }
 }

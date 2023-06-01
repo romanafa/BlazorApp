@@ -45,9 +45,18 @@ namespace BlazorApp_Business.Repository
 
         }
 
-        public async Task<IEnumerable<ProductPriceDto>> GetAll()
+        public async Task<IEnumerable<ProductPriceDto>> GetAllPrices(int? productId = null)
         {
-            return _mapper.Map<IEnumerable<ProductPrice>, IEnumerable<ProductPriceDto>>(_db.ProductPrices);
+            if (productId != null && productId > 0)
+            {
+                return _mapper.Map<IEnumerable<ProductPrice>, IEnumerable<ProductPriceDto>>
+                    (_db.ProductPrices.Where(u => u.ProductId == productId));
+            }
+            else
+            {
+                return _mapper.Map<IEnumerable<ProductPrice>, IEnumerable<ProductPriceDto>>(_db.ProductPrices);
+            }
+            
         }
 
         public async Task<ProductPriceDto> GetById(int id)
