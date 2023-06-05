@@ -23,5 +23,6 @@ namespace BlazorApp_Models
         [Range(1, int.MaxValue, ErrorMessage = "Vennligst velg kategori")]
         public int CategoryId { get; set; }
         public CategoryDto Category { get; set; }
+        public ICollection<ProductPriceDto> ProductPrices { get; set; }
     }
 }
