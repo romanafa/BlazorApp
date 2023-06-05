@@ -38,7 +38,7 @@ else
         <GridPageSettings PageSize="10" PageCount="5" PageSizes="true"></GridPageSettings>
 
         <GridColumns>
-            <GridColumn IsPrimaryKey="true" AllowAdding="false" Field=@nameof(ProductPriceDto.PriceId) HeaderText="Produkt ID"></GridColumn>
+            <GridColumn IsPrimaryKey="true" AllowAdding="false" Field=@nameof(ProductPriceDto.PriceId) HeaderText="ID"></GridColumn>
             <GridColumn Field=@nameof(ProductPriceDto.Size) HeaderText="Størrelse">
                 <EditTemplate>
                     <Syncfusion.Blazor.DropDowns.SfDropDownList DataSource="SizeList" TItem="string" TValue="string" @bind-Value="((context as ProductPriceDto).Size)">

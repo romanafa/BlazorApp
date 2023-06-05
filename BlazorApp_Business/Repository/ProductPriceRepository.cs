@@ -61,10 +61,10 @@ namespace BlazorApp_Business.Repository
 
         public async Task<ProductPriceDto> GetById(int id)
         {
-            var ProductPrice = await _db.ProductPrices.FirstOrDefaultAsync(c => c.PriceId == id);
-            if (ProductPrice != null)
+            var productPrice = await _db.ProductPrices.FirstOrDefaultAsync(c => c.PriceId == id);
+            if (productPrice != null)
             {
-                return _mapper.Map<ProductPrice, ProductPriceDto>(ProductPrice);
+                return _mapper.Map<ProductPrice, ProductPriceDto>(productPrice);
             }
             return new ProductPriceDto();
         }
